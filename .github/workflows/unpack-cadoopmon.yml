@@ -1,0 +1,35 @@
+name: Unpack Cadoopmon
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "index.html.zst"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  unpack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Decompress Cadoopmon
+        run: |
+          zstd -d -f index.html.zst -o index.html
+          rm -f index.html.zst
+
+      - name: Commit playable web build
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Nothing to commit"
+            exit 0
+          fi
+          git commit -m "Publish Cadoopmon web build"
+          git push
